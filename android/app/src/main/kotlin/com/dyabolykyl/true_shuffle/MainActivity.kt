@@ -1,4 +1,4 @@
-package com.example.true_shuffle
+package com.dyabolykyl.true_shuffle
 
 import io.flutter.embedding.android.FlutterActivity
 
