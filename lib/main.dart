@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
+import 'package:logger/logger.dart';
+import 'package:spotify_sdk/spotify_sdk.dart';
 
-void main() {
+Future main() async {
+  await DotEnv.load(fileName: '.env');
   runApp(MyApp());
 }
 
@@ -50,7 +55,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool _loading = false;
   int _counter = 0;
+  final Logger _logger = Logger();
 
   void _incrementCounter() {
     setState(() {
@@ -108,10 +115,39 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
+        onPressed: (_loading) ? null : connectToSpotifyRemote,
         tooltip: 'Increment',
         child: Icon(Icons.add),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  Future<void> connectToSpotifyRemote() async {
+    try {
+      setState(() {
+        _loading = true;
+      });
+      var result =
+          await SpotifySdk.connectToSpotifyRemote(clientId: DotEnv.env['CLIENT_ID'].toString(), redirectUrl: DotEnv.env['REDIRECT_URI'].toString());
+      setStatus(result ? 'connect to spotify successful' : 'connect to spotify failed');
+      setState(() {
+        _loading = false;
+      });
+    } on PlatformException catch (e) {
+      setState(() {
+        _loading = false;
+      });
+      setStatus(e.code, message: e.message);
+    } on MissingPluginException {
+      setState(() {
+        _loading = false;
+      });
+      setStatus('not implemented');
+    }
+  }
+
+  void setStatus(String code, {String message = ''}) {
+    var text = message.isEmpty ? '' : ' : $message';
+    _logger.d('$code$text');
   }
 }
