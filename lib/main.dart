@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' as DotEnv;
-import 'package:logger/logger.dart';
-import 'package:spotify_sdk/spotify_sdk.dart';
+import 'package:true_shuffle/logging/logging.dart';
+import 'package:true_shuffle/spotify/spotify_service.dart';
 
 Future main() async {
   await DotEnv.load(fileName: '.env');
@@ -57,18 +56,8 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   bool _loading = false;
   int _counter = 0;
-  final Logger _logger = Logger();
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  final _logger = logger(MyHomePage);
+  final spotifyService = SpotifyService();
 
   @override
   Widget build(BuildContext context) {
@@ -123,26 +112,17 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> connectToSpotifyRemote() async {
+    setState(() {
+      _loading = true;
+    });
     try {
-      setState(() {
-        _loading = true;
-      });
-      var result =
-          await SpotifySdk.connectToSpotifyRemote(clientId: DotEnv.env['CLIENT_ID'].toString(), redirectUrl: DotEnv.env['REDIRECT_URI'].toString());
-      setStatus(result ? 'connect to spotify successful' : 'connect to spotify failed');
+      await spotifyService.connect();
+    } on Exception catch (e) {
+      setStatus('Error connecting to spotify: $e');
+    } finally {
       setState(() {
         _loading = false;
       });
-    } on PlatformException catch (e) {
-      setState(() {
-        _loading = false;
-      });
-      setStatus(e.code, message: e.message);
-    } on MissingPluginException {
-      setState(() {
-        _loading = false;
-      });
-      setStatus('not implemented');
     }
   }
 
