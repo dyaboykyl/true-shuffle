@@ -18,4 +18,20 @@ class SpotifyService {
       throw Exception('Unknown failure');
     }
   }
+
+  void togglePlayback() async {
+    checkConnection();
+    final state = await SpotifySdk.getPlayerState();
+    if (state.isPaused) {
+      await SpotifySdk.resume();
+    } else {
+      await SpotifySdk.pause();
+    }
+  }
+
+  void checkConnection() {
+    if (!connected) {
+      throw Exception('Not connected to spotify');
+    }
+  }
 }

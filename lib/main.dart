@@ -60,6 +60,12 @@ class _MyHomePageState extends State<MyHomePage> {
   final spotifyService = SpotifyService();
 
   @override
+  void initState() {
+    super.initState();
+    connectToSpotifyRemote();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
@@ -93,6 +99,10 @@ class _MyHomePageState extends State<MyHomePage> {
           // horizontal).
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            RaisedButton(
+              onPressed: () => spotifyService.togglePlayback(),
+              child: Text('Toggle Playback'),
+            ),
             Text(
               'You have pushed the button this many times:',
             ),
