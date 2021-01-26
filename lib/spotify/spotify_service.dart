@@ -19,7 +19,7 @@ class SpotifyService {
     }
   }
 
-  void togglePlayback() async {
+  Future togglePlayback() async {
     checkConnection();
     final state = await SpotifySdk.getPlayerState();
     if (state.isPaused) {
